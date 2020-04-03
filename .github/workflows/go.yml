@@ -6,13 +6,20 @@ jobs:
     name: Build-Deploy
     runs-on: ubuntu-latest
     steps:
-      - name: setup go
-        uses: actions/setup-go@v2-beta
+      -  uses: actions/setup-go@v2-beta
         with:
           go-version: 1.14
+      -  uses: actions/checkout@master
 
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@master
+      - name: Cache go modules
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+
+#      - name: Delete replace
+#        run: go mod
 
       - name: Test
         run: go test ./...
