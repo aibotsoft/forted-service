@@ -1,10 +1,10 @@
 package main
 
 import (
-	"log"
+	"github.com/aibotsoft/micro/logger"
 )
 
 func main() {
-	//cfg:=config.New()
-	log.Println("hello")
+	log := logger.New()
+	log.Debug("hello world")
 }
