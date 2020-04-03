@@ -12,5 +12,6 @@ func main() {
 func Simple() int {
 	log := logger.New()
 	log.Debug("hello world")
+	log.Debug("hello world another time")
 	return 1
 }
