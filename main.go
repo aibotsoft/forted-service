@@ -6,6 +6,5 @@ import (
 
 func main() {
 	//cfg:=config.New()
-	//hello world
 	log.Println("hello")
 }
