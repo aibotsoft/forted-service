@@ -19,8 +19,8 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('go.sum') }}
           restore-keys: ${{ runner.os }}-go-
 
-#      - name: Delete replace
-#        run: go mod
+      - name: Delete replace
+        run: go mod edit -dropreplace github.com/aibotsoft/micro
 
       - name: Test
         run: go test ./...
