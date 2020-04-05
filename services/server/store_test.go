@@ -94,17 +94,12 @@ func TestStore_CreateFortedEvent(t *testing.T) {
 	ctx := context.Background()
 	s := InitStore(t)
 	defer s.Close()
-	starts := time.Now().UTC()
-	service := "Forted"
-	sport := "FortedSport"
-	fortedHome := "FortedHome"
-	fortedAway := "FortedAway"
-	serviceId, err := s.CreateService(ctx, service)
-	sportId, err := s.CreateSport(ctx, sport, serviceId)
-	fortedHomeId, err := s.CreateTeam(ctx, fortedHome, sportId)
-	fortedAwayId, err := s.CreateTeam(ctx, fortedAway, sportId)
+	serviceId, err := s.CreateService(ctx, "Forted")
+	sportId, err := s.CreateSport(ctx, "FortedSport", serviceId)
+	fortedHomeId, err := s.CreateTeam(ctx, "FortedHome", sportId)
+	fortedAwayId, err := s.CreateTeam(ctx, "FortedAway", sportId)
 
-	got, err := s.CreateFortedEvent(ctx, starts, fortedHomeId, fortedAwayId)
+	got, err := s.CreateFortedEvent(ctx, &time.Time{}, fortedHomeId, fortedAwayId)
 	if assert.NoError(t, err) {
 		assert.NotEmpty(t, got, got)
 	}
@@ -130,7 +125,7 @@ func TestStore_CreateEvent(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			eventId, err := s.CreateEvent(ctx, time.Time{}, homeId, awayId, leagueId)
+			eventId, err := s.CreateEvent(ctx, &time.Time{}, homeId, awayId, leagueId)
 			if assert.NoError(t, err) {
 				assert.NotEmpty(t, eventId, eventId)
 			}
@@ -158,11 +153,11 @@ func TestStore_CreateMarket(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			eventId, err := s.CreateEvent(ctx, time.Time{}, homeId, awayId, leagueId)
+			eventId, err := s.CreateEvent(ctx, &time.Time{}, homeId, awayId, leagueId)
 			if !assert.NoError(t, err) {
 				return
 			}
-			marketId, err := s.CreateMarket(ctx, "TestMarket", eventId)
+			marketId, err := s.CreateMarket(ctx, "TestMarket", eventId, "http://testurl.loc")
 			if assert.NoError(t, err) {
 				assert.NotEmpty(t, marketId, marketId)
 			}
@@ -190,11 +185,11 @@ func TestStore_CreatePrice(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			eventId, err := s.CreateEvent(ctx, time.Time{}, homeId, awayId, leagueId)
+			eventId, err := s.CreateEvent(ctx, &time.Time{}, homeId, awayId, leagueId)
 			if !assert.NoError(t, err) {
 				return
 			}
-			marketId, err := s.CreateMarket(ctx, "TestMarket2", eventId)
+			marketId, err := s.CreateMarket(ctx, "TestMarket2", eventId, "")
 			if !assert.NoError(t, err) {
 				return
 			}
@@ -225,3 +220,7 @@ func TestStore_CreatePrice(t *testing.T) {
 		}
 	}
 }
+
+//func TestStore_CreateSurebet(t *testing.T) {
+//
+//}

@@ -1,13 +1,13 @@
 package server
 
 import (
+	"context"
 	"database/sql"
 	"github.com/aibotsoft/micro/cache"
 	"github.com/aibotsoft/micro/config"
 	"github.com/dgraph-io/ristretto"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"golang.org/x/net/context"
 	"strconv"
 	"strings"
 	"time"
@@ -105,13 +105,13 @@ func (s *Store) CreateTeam(ctx context.Context, name string, sportId int) (int, 
 	return id, nil
 }
 
-func (s *Store) CreateFortedEvent(ctx context.Context, starts time.Time, fortedHomeId int, fortedAwayId int) (int, error) {
+func (s *Store) CreateFortedEvent(ctx context.Context, starts *time.Time, fortedHomeId int, fortedAwayId int) (int, error) {
 	key := s.FormKey("FortedEvent", starts.String(), strconv.Itoa(fortedHomeId), strconv.Itoa(fortedAwayId))
 	id, b := s.CheckInCache(ctx, key)
 	if b {
 		return id, nil
 	}
-	err := s.db.QueryRowContext(ctx, "uspCreateFortedEvent", &starts, &fortedHomeId, &fortedAwayId).Scan(&id)
+	err := s.db.QueryRowContext(ctx, "uspCreateFortedEvent", starts, &fortedHomeId, &fortedAwayId).Scan(&id)
 	if err != nil {
 		return 0, errors.Wrapf(err, "uspCreateFortedEvent error")
 	}
@@ -119,7 +119,7 @@ func (s *Store) CreateFortedEvent(ctx context.Context, starts time.Time, fortedH
 	return id, nil
 }
 
-func (s *Store) CreateEvent(ctx context.Context, starts time.Time, homeId int, awayId int, leagueId int) (int, error) {
+func (s *Store) CreateEvent(ctx context.Context, starts *time.Time, homeId int, awayId int, leagueId int) (int, error) {
 	key := s.FormKey("Event", starts.String(), strconv.Itoa(homeId), strconv.Itoa(awayId), strconv.Itoa(leagueId))
 	id, b := s.CheckInCache(ctx, key)
 	if b {
@@ -133,14 +133,13 @@ func (s *Store) CreateEvent(ctx context.Context, starts time.Time, homeId int, a
 	return id, nil
 }
 
-func (s *Store) CreateMarket(ctx context.Context, marketName string, eventId int) (int, error) {
+func (s *Store) CreateMarket(ctx context.Context, marketName string, eventId int, url string) (int, error) {
 	key := s.FormKey("Market", marketName, strconv.Itoa(eventId))
-	s.log.Debug(key)
 	id, b := s.CheckInCache(ctx, key)
 	if b {
 		return id, nil
 	}
-	err := s.db.QueryRowContext(ctx, "uspCreateMarket", &marketName, &eventId).Scan(&id)
+	err := s.db.QueryRowContext(ctx, "uspCreateMarket", &marketName, &eventId, &url).Scan(&id)
 	if err != nil {
 		return 0, errors.Wrapf(err, "uspCreateMarket error")
 	}
@@ -151,24 +150,23 @@ func (s *Store) CreateMarket(ctx context.Context, marketName string, eventId int
 func (s *Store) CreatePrice(ctx context.Context, price float64, marketId int) (int, error) {
 	var id int
 	var createdAt *time.Time
-	err := s.db.QueryRowContext(ctx, "uspCreatePrice", &price, &marketId).Scan(&id, &createdAt)
+	err := s.db.QueryRowContext(ctx, "uspCreatePrice", sql.Named("Price", &price), sql.Named("MarketId", &marketId)).Scan(&id, &createdAt)
 	if err != nil {
-		return 0, errors.Wrapf(err, "uspCreatePrice error")
+		return 0, errors.Wrapf(err, "uspCreatePrice error, price=%v, marketId=%v", price, marketId)
 	}
-	s.log.Debug("createdAt", createdAt)
 	return id, nil
 }
 
-func (s *Store) CreateSurebet(ctx context.Context, marketName string, eventId int) (int, error) {
-	key := s.FormKey("Market", marketName, strconv.Itoa(eventId))
+func (s *Store) CreateSurebet(ctx context.Context, FortedEventId int, AMarketId int, BMarketId int) (int, error) {
+	key := s.FormKey("Surebet", strconv.Itoa(FortedEventId), strconv.Itoa(AMarketId), strconv.Itoa(BMarketId))
 	s.log.Debug(key)
 	id, b := s.CheckInCache(ctx, key)
 	if b {
 		return id, nil
 	}
-	err := s.db.QueryRowContext(ctx, "uspCreateMarket", &marketName, &eventId).Scan(&id)
+	err := s.db.QueryRowContext(ctx, "uspCreateSurebet", &FortedEventId, &AMarketId, &BMarketId).Scan(&id)
 	if err != nil {
-		return 0, errors.Wrapf(err, "uspCreateMarket error")
+		return 0, errors.Wrapf(err, "uspCreateSurebet error")
 	}
 	s.cache.Set(key, id, 1)
 	return id, nil

@@ -1,43 +1,69 @@
 package server
 
 import (
+	"context"
+	pb "github.com/aibotsoft/gen/fortedpb"
 	"github.com/aibotsoft/micro/config"
 	"github.com/aibotsoft/micro/logger"
 	"github.com/aibotsoft/micro/sqlserver"
+	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
-func InitServerHelper(t *testing.T) (*Server, func()) {
+func InitServerHelper(t *testing.T) *Server {
 	t.Helper()
 	cfg := config.New()
 	log := logger.New()
-	//log.Infow("Begin service", "config", cfg)
 	db := sqlserver.MustConnect(cfg)
-	closer := func() {
-		//log.Info("Closing db")
-		if err := db.Close(); err != nil {
-			log.Info(err)
-		}
-	}
 	s := NewServer(cfg, log, db)
-	return s, closer
+	return s
 }
 
-//func TestServer_CreateSurebet(t *testing.T) {
-//	s, closer := InitServerHelper(t)
-//	defer closer()
-//
-//	var surebet []*pb.SurebetSide
-//	surebet = append(surebet, &pb.SurebetSide{
-//		ServiceName: "Pinnacle",
-//	})
-//
-//	res, err := s.CreateSurebet(context.Background(), &pb.CreateSurebetRequest{
-//		Surebet: &pb.Surebet{
-//			SurebetSide: surebet,
-//		},
-//	})
-//	assert.NoError(t, err, err)
-//	assert.NotEmpty(t, res, res)
-//	t.Log("response ", res.GetSurebetId())
-//}
+func TestServer_CreateSurebet(t *testing.T) {
+	s := InitServerHelper(t)
+	defer s.store.Close()
+
+	//var surebet []*pb.SurebetSide
+	req := &pb.CreateSurebetRequest{
+		Surebet: &pb.Surebet{
+			CreatedAt:    &time.Time{},
+			SurebetHash:  "hash",
+			Starts:       &time.Time{},
+			FortedHome:   "FortedHome",
+			FortedAway:   "FortedAway",
+			FortedProfit: "6.66",
+			Members: []*pb.SurebetSide{
+				&pb.SurebetSide{
+					Num:         "1",
+					ServiceName: "TestService_1",
+					SportName:   "TestSport_1",
+					LeagueName:  "TestLeague_1",
+					Home:        "TestHome_1",
+					Away:        "TestAway_1",
+					MarketName:  "TestMarket_1",
+					Price:       6.66,
+					Url:         "http://testurl.loc",
+					Initiator:   "true",
+				},
+				&pb.SurebetSide{
+					Num:         "2",
+					ServiceName: "TestService_2",
+					SportName:   "TestSport_2",
+					LeagueName:  "TestLeague_2",
+					Home:        "TestHome_2",
+					Away:        "TestAway_2",
+					MarketName:  "TestMarket_2",
+					Price:       6.66,
+					Url:         "http://testurl.loc",
+					Initiator:   "",
+				},
+			},
+		},
+	}
+	res, err := s.CreateSurebet(context.Background(), req)
+	if assert.NoError(t, err) {
+		assert.NotEmpty(t, res, res)
+
+	}
+}
