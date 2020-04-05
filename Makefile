@@ -49,7 +49,7 @@ mig_up:
 	migrate -verbose -source file://migrations -database $$DSL goto 2
 
 mig_create:
-	migrate create -ext sql -dir migrations tMarket
+	migrate create -ext sql -dir migrations uspCreateSurebet
 
 
 go_version:

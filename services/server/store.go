@@ -49,16 +49,6 @@ func (s *Store) FormKey(name string, keys ...string) string {
 	return name + ":" + strings.Join(keys[:], ":")
 }
 
-func (s *Store) SaveInCache(ctx context.Context, key string) (int, bool) {
-	if get, b := s.cache.Get(key); b {
-		if value, ok := get.(int); ok {
-			s.log.Debugf("Got %q from cache ", key)
-			return value, true
-		}
-	}
-	return 0, false
-}
-
 func (s *Store) CreateService(ctx context.Context, serviceName string) (int, error) {
 	key := s.FormKey("Service", serviceName)
 	id, b := s.CheckInCache(ctx, key)
@@ -143,14 +133,40 @@ func (s *Store) CreateEvent(ctx context.Context, starts time.Time, homeId int, a
 	return id, nil
 }
 
-func (s *Store) CreateMarket(ctx context.Context, eventId int, market string) (int, error) {
-	key := s.FormKey("Market", strconv.Itoa(eventId), market)
+func (s *Store) CreateMarket(ctx context.Context, marketName string, eventId int) (int, error) {
+	key := s.FormKey("Market", marketName, strconv.Itoa(eventId))
 	s.log.Debug(key)
 	id, b := s.CheckInCache(ctx, key)
 	if b {
 		return id, nil
 	}
-	err := s.db.QueryRowContext(ctx, "uspCreateMarket", &eventId, &market).Scan(&id)
+	err := s.db.QueryRowContext(ctx, "uspCreateMarket", &marketName, &eventId).Scan(&id)
+	if err != nil {
+		return 0, errors.Wrapf(err, "uspCreateMarket error")
+	}
+	s.cache.Set(key, id, 1)
+	return id, nil
+}
+
+func (s *Store) CreatePrice(ctx context.Context, price float64, marketId int) (int, error) {
+	var id int
+	var createdAt *time.Time
+	err := s.db.QueryRowContext(ctx, "uspCreatePrice", &price, &marketId).Scan(&id, &createdAt)
+	if err != nil {
+		return 0, errors.Wrapf(err, "uspCreatePrice error")
+	}
+	s.log.Debug("createdAt", createdAt)
+	return id, nil
+}
+
+func (s *Store) CreateSurebet(ctx context.Context, marketName string, eventId int) (int, error) {
+	key := s.FormKey("Market", marketName, strconv.Itoa(eventId))
+	s.log.Debug(key)
+	id, b := s.CheckInCache(ctx, key)
+	if b {
+		return id, nil
+	}
+	err := s.db.QueryRowContext(ctx, "uspCreateMarket", &marketName, &eventId).Scan(&id)
 	if err != nil {
 		return 0, errors.Wrapf(err, "uspCreateMarket error")
 	}

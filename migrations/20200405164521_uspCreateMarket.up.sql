@@ -1,11 +1,11 @@
-create or alter proc uspCreateMarket @eventId int, @Market varchar(50) as
+create or alter proc uspCreateMarket @MarketName varchar(60), @EventId int as
 begin
     set nocount on
     declare @MarketId int
 
-    select @MarketId = MarketId from Market where TeamName = @TeamName and SportId = @SportId
+    select @MarketId = MarketId from dbo.Market where MarketName = @MarketName and EventId = @EventId
     if @@rowcount = 0
-        insert into Team (TeamName, SportId) output inserted.TeamId values (@TeamName, @SportId)
+        insert into Market (MarketName, EventId) output inserted.MarketId values (@MarketName, @EventId)
     else
-        select @TeamId
+        select @MarketId
 end
