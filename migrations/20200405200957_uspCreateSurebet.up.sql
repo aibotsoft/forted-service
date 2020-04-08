@@ -16,3 +16,4 @@ begin
     else
         select @SurebetId
 end
+

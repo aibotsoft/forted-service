@@ -30,12 +30,7 @@ func (s *Store) Close() {
 	}
 }
 
-func (s *Store) CheckInCache(ctx context.Context, name string, keys ...string) (int, bool) {
-	if len(keys) == 0 || name == "" {
-		return 0, false
-	}
-	keysJoin := strings.Join(keys[:], ":")
-	key := name + ":" + keysJoin
+func (s *Store) CheckInCache(ctx context.Context, key string) (int, bool) {
 	if get, b := s.cache.Get(key); b {
 		if value, ok := get.(int); ok {
 			s.log.Debugf("Got %q from cache ", key)
@@ -159,7 +154,6 @@ func (s *Store) CreatePrice(ctx context.Context, price float64, marketId int) (i
 
 func (s *Store) CreateSurebet(ctx context.Context, FortedEventId int, AMarketId int, BMarketId int) (int, error) {
 	key := s.FormKey("Surebet", strconv.Itoa(FortedEventId), strconv.Itoa(AMarketId), strconv.Itoa(BMarketId))
-	s.log.Debug(key)
 	id, b := s.CheckInCache(ctx, key)
 	if b {
 		return id, nil

@@ -117,11 +117,12 @@ func (s *Server) CreateSurebet(ctx context.Context, request *pb.CreateSurebetReq
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "store.CreatePrice error: %v", err)
 		}
-		s.log.Debug("ServiceId", i, ids[i].ServiceId)
 	}
 	surebetId, err := s.store.CreateSurebet(ctx, fortedEventId, ids[0].MarketId, ids[1].MarketId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "store.CreateSurebet error: %v", err)
 	}
+	s.log.Info(s.store.cache.Metrics)
+
 	return &pb.CreateSurebetResponse{SurebetId: int64(surebetId), SurebetHash: 0}, nil
 }

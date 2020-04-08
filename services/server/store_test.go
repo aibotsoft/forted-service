@@ -6,7 +6,6 @@ import (
 	"github.com/aibotsoft/micro/logger"
 	"github.com/aibotsoft/micro/sqlserver"
 	"github.com/stretchr/testify/assert"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -19,19 +18,20 @@ func InitStore(t *testing.T) *Store {
 	store := NewStore(cfg, log, db)
 	return store
 }
-func TestStore_CheckInCache(t *testing.T) {
-	s := InitStore(t)
-	defer s.Close()
-	var dig int
-	s.cache.Set("Test:one:0", 66, 1)
-	time.Sleep(time.Millisecond * 10)
-	got, b := s.CheckInCache(context.Background(), "Test")
-	assert.False(t, b)
-	got, b = s.CheckInCache(context.Background(), "Test", "one", strconv.Itoa(dig))
-	if assert.True(t, b, b) {
-		assert.NotEmpty(t, 66, got)
-	}
-}
+
+//func TestStore_CheckInCache(t *testing.T) {
+//	s := InitStore(t)
+//	defer s.Close()
+//	var dig int
+//	s.cache.Set("Test:one:0", 66, 1)
+//	time.Sleep(time.Millisecond * 10)
+//	got, b := s.CheckInCache(context.Background(), "Test")
+//	assert.False(t, b)
+//	got, b = s.CheckInCache(context.Background(), "Test", "one", strconv.Itoa(dig))
+//	if assert.True(t, b, b) {
+//		assert.NotEmpty(t, 66, got)
+//	}
+//}
 
 func TestStore_CreateService(t *testing.T) {
 	s := InitStore(t)

@@ -61,9 +61,17 @@ func TestServer_CreateSurebet(t *testing.T) {
 			},
 		},
 	}
+	start := time.Now()
 	res, err := s.CreateSurebet(context.Background(), req)
 	if assert.NoError(t, err) {
 		assert.NotEmpty(t, res, res)
-
 	}
+	t.Log("CreateSurebet time", time.Since(start).Milliseconds())
+
+	start = time.Now()
+	res, err = s.CreateSurebet(context.Background(), req)
+	if assert.NoError(t, err) {
+		assert.NotEmpty(t, res, res)
+	}
+	t.Log("CreateSurebet2 time", time.Since(start).Milliseconds())
 }
