@@ -5,8 +5,10 @@ create table dbo.Price
     MarketId   int                                        not null,
     CreatedAt  datetimeoffset default sysdatetimeoffset() not null,
     ReceivedAt datetimeoffset                             not null,
+
     constraint PK_PriceId primary key (PriceId),
-    constraint FK_Price_Market foreign key (MarketId) references Market on update cascade on delete cascade
+    constraint FK_Price_Market foreign key (MarketId) references Market on update cascade on delete cascade,
+    index IX_Price_MarketId (MarketId)
 )
--- drop INDEX IX_Price ON dbo.Price
-CREATE NONCLUSTERED INDEX IX_Price ON dbo.Price (MarketId) include (Price)
+
+
