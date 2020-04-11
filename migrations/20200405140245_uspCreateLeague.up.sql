@@ -1,4 +1,4 @@
-create or alter proc uspCreateLeague @LeagueName varchar(50), @SportId int  as
+create or alter proc uspCreateLeague @LeagueName varchar(120), @SportId int  as
 begin
     set nocount on
     declare @LeagueId int

@@ -3,11 +3,14 @@ package server
 import (
 	"context"
 	"database/sql"
+	pb "github.com/aibotsoft/gen/fortedpb"
 	"github.com/aibotsoft/micro/cache"
 	"github.com/aibotsoft/micro/config"
 	"github.com/dgraph-io/ristretto"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"strconv"
 	"strings"
 	"time"
@@ -33,7 +36,7 @@ func (s *Store) Close() {
 func (s *Store) CheckInCache(ctx context.Context, key string) (int, bool) {
 	if get, b := s.cache.Get(key); b {
 		if value, ok := get.(int); ok {
-			s.log.Debugf("Got %q from cache ", key)
+			//s.log.Debugf("Got %q from cache ", key)
 			return value, true
 		}
 	}
@@ -100,8 +103,8 @@ func (s *Store) CreateTeam(ctx context.Context, name string, sportId int) (int, 
 	return id, nil
 }
 
-func (s *Store) CreateFortedEvent(ctx context.Context, starts *time.Time, fortedHomeId int, fortedAwayId int) (int, error) {
-	key := s.FormKey("FortedEvent", starts.String(), strconv.Itoa(fortedHomeId), strconv.Itoa(fortedAwayId))
+func (s *Store) CreateFortedEvent(ctx context.Context, starts string, fortedHomeId int, fortedAwayId int) (int, error) {
+	key := s.FormKey("FortedEvent", starts, strconv.Itoa(fortedHomeId), strconv.Itoa(fortedAwayId))
 	id, b := s.CheckInCache(ctx, key)
 	if b {
 		return id, nil
@@ -114,8 +117,8 @@ func (s *Store) CreateFortedEvent(ctx context.Context, starts *time.Time, forted
 	return id, nil
 }
 
-func (s *Store) CreateEvent(ctx context.Context, starts *time.Time, homeId int, awayId int, leagueId int) (int, error) {
-	key := s.FormKey("Event", starts.String(), strconv.Itoa(homeId), strconv.Itoa(awayId), strconv.Itoa(leagueId))
+func (s *Store) CreateEvent(ctx context.Context, starts string, homeId int, awayId int, leagueId int) (int, error) {
+	key := s.FormKey("Event", starts, strconv.Itoa(homeId), strconv.Itoa(awayId), strconv.Itoa(leagueId))
 	id, b := s.CheckInCache(ctx, key)
 	if b {
 		return id, nil
@@ -128,13 +131,13 @@ func (s *Store) CreateEvent(ctx context.Context, starts *time.Time, homeId int, 
 	return id, nil
 }
 
-func (s *Store) CreateMarket(ctx context.Context, marketName string, eventId int, url string) (int, error) {
+func (s *Store) CreateMarket(ctx context.Context, marketName string, eventId int, url string, num int64) (int, error) {
 	key := s.FormKey("Market", marketName, strconv.Itoa(eventId))
 	id, b := s.CheckInCache(ctx, key)
 	if b {
 		return id, nil
 	}
-	err := s.db.QueryRowContext(ctx, "uspCreateMarket", &marketName, &eventId, &url).Scan(&id)
+	err := s.db.QueryRowContext(ctx, "uspCreateMarket", &marketName, &eventId, &url, &num).Scan(&id)
 	if err != nil {
 		return 0, errors.Wrapf(err, "uspCreateMarket error")
 	}
@@ -142,10 +145,13 @@ func (s *Store) CreateMarket(ctx context.Context, marketName string, eventId int
 	return id, nil
 }
 
-func (s *Store) CreatePrice(ctx context.Context, price float64, marketId int) (int, error) {
+func (s *Store) CreatePrice(ctx context.Context, price float64, marketId int, received string) (int, error) {
 	var id int
 	var createdAt *time.Time
-	err := s.db.QueryRowContext(ctx, "uspCreatePrice", sql.Named("Price", &price), sql.Named("MarketId", &marketId)).Scan(&id, &createdAt)
+	err := s.db.QueryRowContext(ctx, "uspCreatePrice",
+		sql.Named("Price", &price),
+		sql.Named("MarketId", &marketId),
+		sql.Named("ReceivedAT", &received)).Scan(&id, &createdAt)
 	if err != nil {
 		return 0, errors.Wrapf(err, "uspCreatePrice error, price=%v, marketId=%v", price, marketId)
 	}
@@ -164,4 +170,137 @@ func (s *Store) CreateSurebet(ctx context.Context, FortedEventId int, AMarketId 
 	}
 	s.cache.Set(key, id, 1)
 	return id, nil
+}
+
+func (s *Store) CreateLog(ctx context.Context, SurebetId int, FilterName string, FortedProfit string, InitiatorNum int, SkynetId int64, ReceivedAt string) (int, error) {
+	var id int
+	err := s.db.QueryRowContext(ctx, "uspCreateLog", &SurebetId, &FilterName, &FortedProfit, &InitiatorNum, &SkynetId, &ReceivedAt).Scan(&id)
+	if err != nil {
+		return 0, errors.Wrapf(err, "uspCreateLog error")
+	}
+	return id, nil
+}
+
+func (s *Store) CheckSkynetId(ctx context.Context, skynetId int64) (int, error) {
+	var id int
+	err := s.db.QueryRowContext(ctx, "uspCheckSkynetId", &skynetId).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+func (s *Store) LogAndReturnErr(err error, code codes.Code, msg string) error {
+	s.log.Error(msg, err)
+	return status.Errorf(code, "%v error: %v ", msg, err)
+}
+
+type SurebetIds struct {
+	ServiceId int
+	SportId   int
+	LeagueId  int
+	HomeId    int
+	AwayId    int
+	EventId   int
+	MarketId  int
+	PriceId   int
+}
+
+func (s *Store) InsertFullSurebet(ctx context.Context, sur *pb.Surebet) (int, error) {
+	if sur.GetSkynetId() != 0 {
+		logId, err := s.CheckSkynetId(ctx, sur.GetSkynetId())
+		switch {
+		case err == sql.ErrNoRows:
+			break
+		case err != nil:
+			return 0, s.LogAndReturnErr(err, codes.Internal, "store.CheckSkynetId")
+		case logId != 0:
+			return 0, status.Errorf(codes.AlreadyExists, "skynetId %v already exists", sur.GetSkynetId())
+		}
+	}
+	fortedServiceId, err := s.CreateService(ctx, "Forted")
+	if err != nil {
+		return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateService")
+	}
+	fortedSport := "FortedUndefined"
+	if sur.FortedSport != "" {
+		fortedSport = sur.FortedSport
+	}
+	fortedSportId, err := s.CreateSport(ctx, fortedSport, fortedServiceId)
+	if err != nil {
+		return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateSport")
+	}
+	fortedLeague := "FortedUndefined"
+	if sur.FortedLeague != "" {
+		fortedLeague = sur.FortedLeague
+	}
+	fortedLeagueId, err := s.CreateLeague(ctx, fortedLeague, fortedSportId)
+	if err != nil {
+		return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateLeague")
+	}
+
+	fortedHomeId, err := s.CreateTeam(ctx, sur.FortedHome, fortedSportId)
+	if err != nil {
+		return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateTeam")
+	}
+
+	fortedAwayId, err := s.CreateTeam(ctx, sur.FortedAway, fortedSportId)
+	if err != nil {
+		return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateTeam")
+	}
+
+	fortedEventId, err := s.CreateEvent(ctx, sur.Starts, fortedHomeId, fortedAwayId, fortedLeagueId)
+	if err != nil {
+		return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateEvent")
+	}
+
+	var initiatorId int
+	ids := make([]SurebetIds, 2)
+	for i, ss := range sur.Members {
+		ids[i].ServiceId, err = s.CreateService(ctx, ss.ServiceName)
+		if err != nil {
+			return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateService")
+		}
+		ids[i].SportId, err = s.CreateSport(ctx, ss.SportName, ids[i].ServiceId)
+		if err != nil {
+			return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateSport")
+		}
+		ids[i].LeagueId, err = s.CreateLeague(ctx, ss.LeagueName, ids[i].SportId)
+		if err != nil {
+			return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateLeague")
+		}
+		ids[i].HomeId, err = s.CreateTeam(ctx, ss.Home, ids[i].SportId)
+		if err != nil {
+			return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateTeam")
+		}
+		ids[i].AwayId, err = s.CreateTeam(ctx, ss.Away, ids[i].SportId)
+		if err != nil {
+			return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateTeam")
+		}
+		ids[i].EventId, err = s.CreateEvent(ctx, sur.Starts, ids[i].HomeId, ids[i].AwayId, ids[i].LeagueId)
+		if err != nil {
+			return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateEvent")
+		}
+
+		ids[i].MarketId, err = s.CreateMarket(ctx, ss.MarketName, ids[i].EventId, ss.Url, ss.Num)
+		if err != nil {
+			return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateMarket")
+		}
+		if ss.Initiator {
+			initiatorId = ids[i].MarketId
+		}
+		ids[i].PriceId, err = s.CreatePrice(ctx, ss.Price, ids[i].MarketId, sur.CreatedAt)
+		if err != nil {
+			return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreatePrice")
+		}
+	}
+	surebetId, err := s.CreateSurebet(ctx, fortedEventId, ids[0].MarketId, ids[1].MarketId)
+	if err != nil {
+		return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateSurebet")
+	}
+	logId, err := s.CreateLog(ctx, surebetId, sur.FilterName, sur.FortedProfit, initiatorId, sur.GetSkynetId(), sur.CreatedAt)
+	if err != nil {
+		return 0, s.LogAndReturnErr(err, codes.Internal, "store.CreateLog")
+
+	}
+	return logId, nil
 }

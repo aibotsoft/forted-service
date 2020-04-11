@@ -16,6 +16,8 @@ func main() {
 	log := logger.New()
 	log.Infow("Begin service", "config", cfg)
 	db := sqlserver.MustConnect(cfg)
+
+	return
 	s := server.NewServer(cfg, log, db)
 
 	// Инициализируем GracefulStop
