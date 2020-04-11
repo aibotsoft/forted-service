@@ -50,7 +50,7 @@ func (s *Server) CreateSurebetMany(ctx context.Context, req *pb.CreateSurebetMan
 	start := time.Now()
 	var newSurebet int64 = 0
 	for _, sur := range req.GetSurebet() {
-		//s.log.Info(sur)
+		s.log.Info(sur)
 		logId, err := s.store.InsertFullSurebet(ctx, sur)
 		if err != nil {
 			s.log.Info(err)

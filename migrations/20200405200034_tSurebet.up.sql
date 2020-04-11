@@ -4,9 +4,6 @@ create table dbo.Surebet
     FortedEventId int                                        not null,
     AMarketId     int                                        not null,
     BMarketId     int                                        not null,
-    FilterName    varchar(50)                                not null,
-
-    FortedProfit  decimal(9, 6)                              not null,
     CreatedAt     datetimeoffset default sysdatetimeoffset() not null,
     constraint PK_SurebetId primary key (SurebetId),
     constraint UQ_Surebet unique (FortedEventId, AMarketId, BMarketId),
