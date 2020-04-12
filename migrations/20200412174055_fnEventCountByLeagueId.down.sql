@@ -1,0 +1,1 @@
+drop function chk.fnEventCountByLeagueId

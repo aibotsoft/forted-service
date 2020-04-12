@@ -14,3 +14,4 @@ create table dbo.Event
 )
 
 
+create index IX_Event_LeagueId on Event (LeagueId)

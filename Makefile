@@ -49,9 +49,7 @@ mig_up:
 	migrate -verbose -source file://migrations -database $$DSL goto 2
 
 mig_create:
-	migrate create -ext sql -dir migrations dbCreate
-
-
+	migrate create -ext sql -dir migrations vSurebetMirrored
 
 go_version:
 	go version
