@@ -1,1 +1,1 @@
-drop table if exists dbo.Market
+drop table  dbo.Market

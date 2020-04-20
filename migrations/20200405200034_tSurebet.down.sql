@@ -1,1 +1,1 @@
-drop table if exists dbo.Surebet
+drop table  dbo.Surebet

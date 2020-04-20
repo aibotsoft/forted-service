@@ -31,6 +31,7 @@ func (s *Store) Close() {
 	if err != nil {
 		s.log.Fatal(err)
 	}
+	s.cache.Close()
 }
 
 func (s *Store) CheckInCache(ctx context.Context, key string) (int, bool) {

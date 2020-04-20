@@ -1,1 +1,1 @@
-drop table if exists dbo.Event
+drop table  dbo.Event

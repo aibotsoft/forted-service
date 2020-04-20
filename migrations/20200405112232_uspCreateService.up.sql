@@ -1,4 +1,4 @@
-create or alter proc uspCreateService @ServiceName varchar(50) as
+create or alter proc dbo.uspCreateService @ServiceName varchar(50) as
 begin
     set nocount on
     declare @ServiceId tinyint

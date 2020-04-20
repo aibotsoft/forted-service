@@ -1,4 +1,4 @@
-create or alter proc uspCreateSurebet @FortedEventId int, @AMarketId int, @BMarketId int as
+create or alter proc dbo.uspCreateSurebet @FortedEventId int, @AMarketId int, @BMarketId int as
 begin
     set nocount on
     declare @SurebetId int

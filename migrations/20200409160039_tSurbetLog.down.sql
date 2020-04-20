@@ -1,1 +1,1 @@
-drop table if exists dbo.SurbetLog
+drop table  dbo.SurbetLog

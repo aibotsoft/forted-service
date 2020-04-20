@@ -10,8 +10,7 @@ create table dbo.Event
     constraint UQ_Event unique (StartsAt, HomeId, AwayId, LeagueId),
     constraint FK_Home_Team foreign key (HomeId) references Team on delete NO ACTION,
     constraint FK_Away_Team foreign key (AwayId) references Team on delete cascade on update cascade,
-    constraint FK_Event_League foreign key (LeagueId) references League
+    constraint FK_Event_League foreign key (LeagueId) references League,
+    index IX_Event_LeagueId (LeagueId),
 )
 
-
-create index IX_Event_LeagueId on Event (LeagueId)

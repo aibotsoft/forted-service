@@ -1,1 +1,1 @@
-drop table if exists Team
+drop table dbo.Team

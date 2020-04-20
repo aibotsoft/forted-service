@@ -1,1 +1,1 @@
-drop table if exists dbo.Price
+drop table dbo.Price

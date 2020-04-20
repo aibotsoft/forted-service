@@ -1,1 +1,1 @@
-drop proc if exists uspCreateFortedEvent
+drop proc dbo.uspCreateFortedEvent

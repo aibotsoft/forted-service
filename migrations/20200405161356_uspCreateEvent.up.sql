@@ -1,4 +1,4 @@
-create or alter proc uspCreateEvent @StartsAt datetimeoffset, @HomeId int, @AwayId int , @LeagueId int as
+create or alter proc dbo.uspCreateEvent @StartsAt datetimeoffset, @HomeId int, @AwayId int , @LeagueId int as
 begin
     set nocount on
     declare @EventId int

@@ -1,4 +1,4 @@
-create or alter proc uspCreateFortedEvent @StartsAt datetimeoffset, @FortedHomeId int, @FortedAwayId int as
+create or alter proc dbo.uspCreateFortedEvent @StartsAt datetimeoffset, @FortedHomeId int, @FortedAwayId int as
 begin
     set nocount on
     declare @FortedEventId int

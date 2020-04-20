@@ -1,1 +1,1 @@
-drop proc if exists uspCreateTeam
+drop proc  dbo.uspCreateTeam

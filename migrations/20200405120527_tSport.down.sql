@@ -1,1 +1,1 @@
-drop table if exists dbo.Sport
+drop table dbo.Sport

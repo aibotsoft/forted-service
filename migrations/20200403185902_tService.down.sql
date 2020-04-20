@@ -1,1 +1,1 @@
-drop table if exists dbo.Service
+drop table dbo.Service

@@ -1,4 +1,4 @@
-create or alter proc uspCreateMarket @MarketName varchar(60), @EventId int, @Url varchar(240), @Num tinyint as
+create or alter proc dbo.uspCreateMarket @MarketName varchar(60), @EventId int, @Url varchar(240), @Num tinyint as
 begin
     set nocount on
     declare @MarketId int

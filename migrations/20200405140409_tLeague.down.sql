@@ -1,1 +1,1 @@
-drop table if exists League
+drop table dbo.League

@@ -1,4 +1,4 @@
-create or alter proc uspCreatePrice @Price decimal(9, 6), @MarketId int, @ReceivedAt datetimeoffset as
+create or alter proc dbo.uspCreatePrice @Price decimal(9, 6), @MarketId int, @ReceivedAt datetimeoffset as
 begin
     set nocount on
     declare @LastPriceId int

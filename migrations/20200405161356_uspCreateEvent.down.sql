@@ -1,1 +1,1 @@
-drop proc if exists uspCreateEvent
+drop proc  dbo.uspCreateEvent

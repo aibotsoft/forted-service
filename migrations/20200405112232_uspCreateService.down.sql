@@ -1,1 +1,1 @@
-drop proc if exists uspCreateService
+drop proc dbo.uspCreateService

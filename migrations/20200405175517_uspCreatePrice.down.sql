@@ -1,1 +1,1 @@
-drop proc if exists dbo.uspCreatePrice
+drop proc dbo.uspCreatePrice

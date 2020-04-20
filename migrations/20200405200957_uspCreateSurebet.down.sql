@@ -1,1 +1,1 @@
-drop proc if exists dbo.CreateSurebet
+drop proc dbo.CreateSurebet

@@ -1,1 +1,1 @@
-drop proc if exists uspCreateMarket
+drop proc  dbo.uspCreateMarket
