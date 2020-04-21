@@ -9,6 +9,8 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"net"
 	"time"
 )
@@ -62,10 +64,13 @@ func (s *Server) CreateSurebetMany(ctx context.Context, req *pb.CreateSurebetMan
 }
 
 func (s *Server) CreateSurebet(ctx context.Context, request *pb.CreateSurebetRequest) (*pb.CreateSurebetResponse, error) {
+	start := time.Now()
 	sur := request.GetSurebet()
 	err := s.store.InsertFullSurebet(ctx, sur)
 	if err != nil {
-		return nil, errors.Wrap(err, "InsertFullSurebet error")
+		return nil, status.Errorf(codes.Internal, "InsertFullSurebet error")
 	}
+	fullTime := time.Since(start)
+	s.log.Infow("create surebet done", "time", fullTime, "logId", sur.LogId)
 	return &pb.CreateSurebetResponse{SurebetId: sur.SurebetId}, nil
 }
