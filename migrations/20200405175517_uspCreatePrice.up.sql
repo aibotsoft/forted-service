@@ -7,7 +7,7 @@ begin
     select top 1 @LastPriceId = PriceId, @LastPrice = Price
     from dbo.Price
     where MarketId = @MarketId
-    order by ReceivedAt desc
+    order by PriceId desc
 
     if @@ROWCOUNT = 0 or @LastPrice != @Price
         begin
