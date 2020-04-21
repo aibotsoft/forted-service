@@ -21,8 +21,8 @@ jobs:
 
       - name: Delete replace
         run: |
-        go mod edit -dropreplace github.com/aibotsoft/micro
-        go mod edit -dropreplace github.com/aibotsoft/gen
+            go mod edit -dropreplace github.com/aibotsoft/micro
+            go mod edit -dropreplace github.com/aibotsoft/gen
 
 #      - name: Test
 #        run: go test ./...
