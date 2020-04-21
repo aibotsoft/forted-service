@@ -24,8 +24,8 @@ jobs:
         go mod edit -dropreplace github.com/aibotsoft/micro
         go mod edit -dropreplace github.com/aibotsoft/gen
 
-      - name: Test
-        run: go test ./...
+#      - name: Test
+#        run: go test ./...
 
       - name: Deploy
         env:
