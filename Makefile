@@ -1,6 +1,6 @@
 #source .env
 .EXPORT_ALL_VARIABLES:
-SERVICE_NAME=proxy-service
+SERVICE_NAME=forted-service
 DOCKER_USERNAME=aibotsoft
 CGO_ENABLED=0
 GOARCH=amd64
@@ -50,6 +50,3 @@ mig_up:
 
 mig_create:
 	migrate create -ext sql -dir migrations vSurebetMirrored
-
-go_version:
-	go version
