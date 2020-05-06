@@ -122,7 +122,7 @@ func (s *Store) CreateSurebet(ctx context.Context, FortedEventId int64, AMarketI
 	return id, nil
 }
 
-func (s *Store) CreateLog(ctx context.Context, SurebetId int64, FilterName string, FortedProfit string, InitiatorNum int64, SkynetId int64, ReceivedAt string) (int64, error) {
+func (s *Store) CreateLog(ctx context.Context, SurebetId int64, FilterName string, FortedProfit float64, InitiatorNum int64, SkynetId int64, ReceivedAt string) (int64, error) {
 	var id int64
 	err := s.db.QueryRowContext(ctx, "dbo.uspCreateLog", &SurebetId, &FilterName, &FortedProfit, &InitiatorNum, &SkynetId, &ReceivedAt).Scan(&id)
 	if err != nil {

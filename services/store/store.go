@@ -39,17 +39,6 @@ func (s *Store) CheckSkynetId(ctx context.Context, skynetId int64) (int, error) 
 	return id, nil
 }
 
-//type SurebetIds struct {
-//	ServiceId int
-//	SportId   int
-//	LeagueId  int
-//	HomeId    int
-//	AwayId    int
-//	EventId   int
-//	MarketId  int
-//	PriceId   int
-//}
-
 func (s *Store) InsertFullSurebet(ctx context.Context, sur *pb.Surebet) error {
 	if sur.GetSkynetId() != 0 {
 		logId, err := s.CheckSkynetId(ctx, sur.GetSkynetId())
@@ -99,7 +88,6 @@ func (s *Store) InsertFullSurebet(ctx context.Context, sur *pb.Surebet) error {
 	}
 
 	var initiatorId int64
-	//ids := make([]SurebetIds, 2)
 	for _, ss := range sur.Members {
 		ss.ServiceId, err = s.CreateService(ctx, ss.ServiceName)
 		if err != nil {
@@ -138,11 +126,11 @@ func (s *Store) InsertFullSurebet(ctx context.Context, sur *pb.Surebet) error {
 			return s.LogAndReturnErr(err, codes.Internal, "store.CreatePrice")
 		}
 	}
-	sur.SurebetId, err = s.CreateSurebet(ctx, fortedEventId, sur.Members[0].MarketId, sur.Members[1].MarketId)
+	sur.FortedSurebetId, err = s.CreateSurebet(ctx, fortedEventId, sur.Members[0].MarketId, sur.Members[1].MarketId)
 	if err != nil {
 		return s.LogAndReturnErr(err, codes.Internal, "store.CreateSurebet")
 	}
-	sur.LogId, err = s.CreateLog(ctx, sur.SurebetId, sur.FilterName, sur.FortedProfit, initiatorId, sur.GetSkynetId(), sur.CreatedAt)
+	sur.LogId, err = s.CreateLog(ctx, sur.FortedSurebetId, sur.FilterName, sur.FortedProfit, initiatorId, sur.GetSkynetId(), sur.CreatedAt)
 	if err != nil {
 		return s.LogAndReturnErr(err, codes.Internal, "store.CreateLog")
 

@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/aibotsoft/forted-service/services/client"
+	"github.com/aibotsoft/forted-service/services/handler"
 	"github.com/aibotsoft/forted-service/services/server"
+	"github.com/aibotsoft/forted-service/services/store"
 	"github.com/aibotsoft/micro/config"
 	"github.com/aibotsoft/micro/logger"
 	"github.com/aibotsoft/micro/mig"
@@ -21,7 +24,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	s := server.NewServer(cfg, log, db)
+	cli := client.NewFortedClient(cfg, log)
+	sto := store.NewStore(cfg, log, db)
+	han := handler.NewHandler(cfg, log, cli, sto)
+
+	s := server.NewServer(cfg, log, han)
 
 	// Инициализируем GracefulStop
 	errc := make(chan error)
