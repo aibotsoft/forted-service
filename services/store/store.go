@@ -7,6 +7,7 @@ import (
 	"github.com/aibotsoft/micro/cache"
 	"github.com/aibotsoft/micro/config"
 	"github.com/dgraph-io/ristretto"
+	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,11 +16,11 @@ import (
 type Store struct {
 	cfg   *config.Config
 	log   *zap.SugaredLogger
-	db    *sql.DB
+	db    *sqlx.DB
 	cache *ristretto.Cache
 }
 
-func NewStore(cfg *config.Config, log *zap.SugaredLogger, db *sql.DB) *Store {
+func NewStore(cfg *config.Config, log *zap.SugaredLogger, db *sqlx.DB) *Store {
 	return &Store{log: log, db: db, cache: cache.NewCache(cfg)}
 }
 func (s *Store) Close() {
@@ -89,51 +90,58 @@ func (s *Store) InsertFullSurebet(ctx context.Context, sur *pb.Surebet) error {
 
 	var initiatorId int64
 	for _, ss := range sur.Members {
-		ss.ServiceId, err = s.CreateService(ctx, ss.ServiceName)
+		ss.Forted.ServiceId, err = s.CreateService(ctx, ss.ServiceName)
 		if err != nil {
 			return s.LogAndReturnErr(err, codes.Internal, "store.CreateService")
 		}
-		ss.SportId, err = s.CreateSport(ctx, ss.SportName, ss.ServiceId)
+		ss.Forted.SportId, err = s.CreateSport(ctx, ss.SportName, ss.Forted.ServiceId)
 		if err != nil {
 			return s.LogAndReturnErr(err, codes.Internal, "store.CreateSport")
 		}
-		ss.LeagueId, err = s.CreateLeague(ctx, ss.LeagueName, ss.SportId)
+		ss.Forted.LeagueId, err = s.CreateLeague(ctx, ss.LeagueName, ss.Forted.SportId)
 		if err != nil {
 			return s.LogAndReturnErr(err, codes.Internal, "store.CreateLeague")
 		}
-		ss.HomeId, err = s.CreateTeam(ctx, ss.Home, ss.SportId)
+		ss.Forted.HomeId, err = s.CreateTeam(ctx, ss.Home, ss.Forted.SportId)
 		if err != nil {
 			return s.LogAndReturnErr(err, codes.Internal, "store.CreateTeam")
 		}
-		ss.AwayId, err = s.CreateTeam(ctx, ss.Away, ss.SportId)
+		ss.Forted.AwayId, err = s.CreateTeam(ctx, ss.Away, ss.Forted.SportId)
 		if err != nil {
 			return s.LogAndReturnErr(err, codes.Internal, "store.CreateTeam")
 		}
-		ss.EventId, err = s.CreateEvent(ctx, sur.Starts, ss.HomeId, ss.AwayId, ss.LeagueId)
+		ss.Forted.EventId, err = s.CreateEvent(ctx, sur.Starts, ss.Forted.HomeId, ss.Forted.AwayId, ss.Forted.LeagueId)
 		if err != nil {
 			return s.LogAndReturnErr(err, codes.Internal, "store.CreateEvent")
 		}
 
-		ss.MarketId, err = s.CreateMarket(ctx, ss.MarketName, ss.EventId, ss.Url, ss.Num)
+		ss.Forted.MarketId, err = s.CreateMarket(ctx, ss.MarketName, ss.Forted.EventId, ss.Url, ss.Num)
 		if err != nil {
 			return s.LogAndReturnErr(err, codes.Internal, "store.CreateMarket")
 		}
 		if ss.Initiator {
-			initiatorId = ss.MarketId
+			initiatorId = ss.Forted.MarketId
 		}
-		ss.PriceId, err = s.CreatePrice(ctx, ss.Price, ss.MarketId, sur.CreatedAt)
+		ss.Forted.PriceId, err = s.CreatePrice(ctx, ss.Price, ss.Forted.MarketId, sur.CreatedAt)
 		if err != nil {
 			return s.LogAndReturnErr(err, codes.Internal, "store.CreatePrice")
 		}
 	}
-	sur.FortedSurebetId, err = s.CreateSurebet(ctx, fortedEventId, sur.Members[0].MarketId, sur.Members[1].MarketId)
+	//s.log.Info("hello")
+	//sur.FortedSurebetId, err = s.CreateSurebet(ctx, fortedEventId, sur.Members[0].Forted.MarketId, sur.Members[1].Forted.MarketId)
+	var MarketIdList []int64
+	for i := range sur.Members {
+		MarketIdList = append(MarketIdList, sur.Members[i].Forted.MarketId)
+	}
+	s.log.Info(MarketIdList)
+
+	sur.FortedSurebetId, err = s.CreateSurebet(ctx, fortedEventId, MarketIdList)
 	if err != nil {
 		return s.LogAndReturnErr(err, codes.Internal, "store.CreateSurebet")
 	}
 	sur.LogId, err = s.CreateLog(ctx, sur.FortedSurebetId, sur.FilterName, sur.FortedProfit, initiatorId, sur.GetSkynetId(), sur.CreatedAt)
 	if err != nil {
 		return s.LogAndReturnErr(err, codes.Internal, "store.CreateLog")
-
 	}
 	return nil
 }

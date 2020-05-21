@@ -11,38 +11,25 @@ import (
 	"time"
 )
 
-func InitStore(t *testing.T) *Store {
-	t.Helper()
+var s *Store
+
+func TestMain(m *testing.M) {
 	cfg := config.New()
 	log := logger.New()
-	db := sqlserver.MustConnect(cfg)
-	store := NewStore(cfg, log, db)
-	return store
+	db := sqlserver.MustConnectX(cfg)
+	s = NewStore(cfg, log, db)
+	m.Run()
+	s.Close()
 }
-
-//func TestStore_CheckInCache(t *testing.T) {
-//	s := InitStore(t)
-//	defer s.Close()
-//	var dig int
-//	s.cache.Set("Test:one:0", 66, 1)
-//	time.Sleep(time.Millisecond * 10)
-//	got, b := s.CheckInCache(context.Background(), "Test")
-//	assert.False(t, b)
-//	got, b = s.CheckInCache(context.Background(), "Test", "one", strconv.Itoa(dig))
-//	if assert.True(t, b, b) {
-//		assert.NotEmpty(t, 66, got)
-//	}
-//}
 
 func surebetHelper(t *testing.T) *pb.Surebet {
 	t.Helper()
 	return &pb.Surebet{
 		CreatedAt:    time.Time{}.Format(time.RFC3339Nano),
-		SurebetHash:  "hash",
 		Starts:       time.Time{}.Format(time.RFC3339Nano),
 		FortedHome:   "FortedHome",
 		FortedAway:   "FortedAway",
-		FortedProfit: "6.66",
+		FortedProfit: 6.66,
 		Members: []*pb.SurebetSide{{
 			Num:         1,
 			ServiceName: "TestService_1",
@@ -74,8 +61,6 @@ func IfErrorFail(t *testing.T, err error) {
 	}
 }
 func TestStore_CreateService(t *testing.T) {
-	s := InitStore(t)
-	defer s.Close()
 	service := surebetHelper(t).Members[0].ServiceName
 	got, err := s.CreateService(context.Background(), service)
 	if assert.NoError(t, err) {
@@ -86,8 +71,6 @@ func TestStore_CreateService(t *testing.T) {
 }
 
 func TestStore_CreateSport(t *testing.T) {
-	s := InitStore(t)
-	defer s.Close()
 	service := surebetHelper(t).Members[0].ServiceName
 	sport := surebetHelper(t).Members[0].SportName
 	serviceId, err := s.CreateService(context.Background(), service)
@@ -99,8 +82,6 @@ func TestStore_CreateSport(t *testing.T) {
 
 func TestStore_CreateLeague(t *testing.T) {
 	ctx := context.Background()
-	s := InitStore(t)
-	defer s.Close()
 	service := surebetHelper(t).Members[0].ServiceName
 	sport := surebetHelper(t).Members[0].SportName
 	league := surebetHelper(t).Members[0].LeagueName
@@ -116,8 +97,6 @@ func TestStore_CreateLeague(t *testing.T) {
 
 func TestStore_CreateTeam(t *testing.T) {
 	ctx := context.Background()
-	s := InitStore(t)
-	defer s.Close()
 	service := surebetHelper(t).Members[0].ServiceName
 	sport := surebetHelper(t).Members[0].SportName
 	home := surebetHelper(t).Members[0].Home
@@ -133,8 +112,6 @@ func TestStore_CreateTeam(t *testing.T) {
 
 func TestStore_CreateEvent_Forted(t *testing.T) {
 	ctx := context.Background()
-	s := InitStore(t)
-	defer s.Close()
 	starts := surebetHelper(t).Starts
 	serviceId, err := s.CreateService(ctx, "Forted")
 	sportId, err := s.CreateSport(ctx, "FortedSport", serviceId)
@@ -149,8 +126,6 @@ func TestStore_CreateEvent_Forted(t *testing.T) {
 
 func TestStore_CreateEvent(t *testing.T) {
 	ctx := context.Background()
-	s := InitStore(t)
-	defer s.Close()
 	service := surebetHelper(t).Members[0].ServiceName
 	sport := surebetHelper(t).Members[0].SportName
 	league := surebetHelper(t).Members[0].LeagueName
@@ -175,8 +150,6 @@ func TestStore_CreateEvent(t *testing.T) {
 }
 func TestStore_CreateMarket(t *testing.T) {
 	ctx := context.Background()
-	s := InitStore(t)
-	defer s.Close()
 	service := surebetHelper(t).Members[0].ServiceName
 	sport := surebetHelper(t).Members[0].SportName
 	league := surebetHelper(t).Members[0].LeagueName
@@ -206,8 +179,6 @@ func TestStore_CreateMarket(t *testing.T) {
 
 func TestStore_CreatePrice(t *testing.T) {
 	ctx := context.Background()
-	s := InitStore(t)
-	defer s.Close()
 	service := surebetHelper(t).Members[0].ServiceName
 	sport := surebetHelper(t).Members[0].SportName
 	league := surebetHelper(t).Members[0].LeagueName
@@ -260,8 +231,6 @@ func TestStore_CreatePrice(t *testing.T) {
 
 func TestStore_InsertFullSurebet(t *testing.T) {
 	ctx := context.Background()
-	s := InitStore(t)
-	defer s.Close()
 	sur := surebetHelper(t)
 	err := s.InsertFullSurebet(ctx, sur)
 	IfErrorFail(t, err)

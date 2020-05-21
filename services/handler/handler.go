@@ -6,6 +6,7 @@ import (
 	"github.com/aibotsoft/forted-service/services/store"
 	pb "github.com/aibotsoft/gen/fortedpb"
 	"github.com/aibotsoft/micro/config"
+	"github.com/aibotsoft/micro/config_client"
 	"go.uber.org/zap"
 )
 
@@ -14,6 +15,7 @@ type Handler struct {
 	log    *zap.SugaredLogger
 	client *client.FortedClient
 	store  *store.Store
+	Conf   *config_client.ConfClient
 }
 
 func (h *Handler) HandleSurebet(ctx context.Context, sur *pb.Surebet) error {
@@ -30,6 +32,12 @@ func (h *Handler) HandleSurebet(ctx context.Context, sur *pb.Surebet) error {
 	return nil
 }
 
-func NewHandler(cfg *config.Config, log *zap.SugaredLogger, client *client.FortedClient, store *store.Store) *Handler {
-	return &Handler{cfg: cfg, log: log, client: client, store: store}
+func (h *Handler) Close() {
+	h.store.Close()
+	h.Conf.Close()
+	h.client.Close()
+}
+
+func NewHandler(cfg *config.Config, log *zap.SugaredLogger, client *client.FortedClient, store *store.Store, conf *config_client.ConfClient) *Handler {
+	return &Handler{cfg: cfg, log: log, client: client, store: store, Conf: conf}
 }

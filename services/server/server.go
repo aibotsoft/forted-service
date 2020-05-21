@@ -29,20 +29,18 @@ func (s *Server) CreateSurebet(ctx context.Context, request *pb.CreateSurebetReq
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "InsertFullSurebet error")
 	}
-	s.log.Infow("create surebet done", "time", time.Since(start), "logId", sur.LogId)
+	s.log.Infow("create surebet done", "time", time.Since(start), "FortedSurebetId", sur.FortedSurebetId, "logId", sur.LogId, "profit", sur.FortedProfit)
 	return &pb.CreateSurebetResponse{SurebetId: sur.SurebetId}, nil
 }
 
 func NewServer(cfg *config.Config, log *zap.SugaredLogger, handler *handler.Handler) *Server {
-	return &Server{
-		cfg:     cfg,
-		log:     log,
-		handler: handler,
-		gs:      grpc.NewServer(),
-	}
+	return &Server{cfg: cfg, log: log, handler: handler, gs: grpc.NewServer()}
 }
 func (s *Server) Serve() error {
-	addr := net.JoinHostPort("", s.cfg.FortedService.GrpcPort)
+	addr, err := s.handler.Conf.GetGrpcAddr(context.Background(), s.cfg.Service.Name)
+	if err != nil {
+		s.log.Panic(err)
+	}
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		return errors.Wrap(err, "net.Listen error")
@@ -52,9 +50,10 @@ func (s *Server) Serve() error {
 	return s.gs.Serve(lis)
 }
 
-func (s *Server) GracefulStop() {
+func (s *Server) Close() {
 	s.log.Debug("begin gRPC server gracefulStop")
 	s.gs.GracefulStop()
+	s.handler.Close()
 	s.log.Debug("end gRPC server gracefulStop")
 }
 

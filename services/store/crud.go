@@ -108,25 +108,42 @@ func (s *Store) CreatePrice(ctx context.Context, price float64, marketId int64, 
 	return id, nil
 }
 
-func (s *Store) CreateSurebet(ctx context.Context, FortedEventId int64, AMarketId int64, BMarketId int64) (int64, error) {
-	key := s.FormKey("Surebet", strconv.FormatInt(FortedEventId, 10), strconv.FormatInt(AMarketId, 10), strconv.FormatInt(BMarketId, 10))
-	id, b := s.CheckInCache(ctx, key)
-	if b {
-		return id, nil
-	}
-	err := s.db.QueryRowContext(ctx, "dbo.uspCreateSurebet", &FortedEventId, &AMarketId, &BMarketId).Scan(&id)
-	if err != nil {
-		return 0, errors.Wrapf(err, "uspCreateSurebet error")
-	}
-	s.cache.Set(key, id, 1)
-	return id, nil
-}
-
 func (s *Store) CreateLog(ctx context.Context, SurebetId int64, FilterName string, FortedProfit float64, InitiatorNum int64, SkynetId int64, ReceivedAt string) (int64, error) {
 	var id int64
 	err := s.db.QueryRowContext(ctx, "dbo.uspCreateLog", &SurebetId, &FilterName, &FortedProfit, &InitiatorNum, &SkynetId, &ReceivedAt).Scan(&id)
 	if err != nil {
 		return 0, errors.Wrapf(err, "uspCreateLog error")
 	}
+	return id, nil
+}
+
+//func (s *Store) CreateSurebet(ctx context.Context, FortedEventId int64, AMarketId int64, BMarketId int64) (int64, error) {
+//	key := s.FormKey("Surebet", strconv.FormatInt(FortedEventId, 10), strconv.FormatInt(AMarketId, 10), strconv.FormatInt(BMarketId, 10))
+//	id, b := s.CheckInCache(ctx, key)
+//	if b {
+//		return id, nil
+//	}
+//	err := s.db.QueryRowContext(ctx, "dbo.uspCreateSurebet", &FortedEventId, &AMarketId, &BMarketId).Scan(&id)
+//	if err != nil {
+//		return 0, errors.Wrapf(err, "uspCreateSurebet error")
+//	}
+//	s.cache.Set(key, id, 1)
+//	return id, nil
+//}
+func (s *Store) CreateSurebet(ctx context.Context, FortedEventId int64, marketIdList []int64) (int64, error) {
+	key := SliceToString(append(marketIdList, FortedEventId), "surebet")
+	id, b := s.CheckInCache(ctx, key)
+	if b {
+		return id, nil
+	}
+	var thirdMarket int64
+	if len(marketIdList) == 3 {
+		thirdMarket = marketIdList[2]
+	}
+	err := s.db.QueryRowContext(ctx, "dbo.uspCreateSurebet", &FortedEventId, marketIdList[0], marketIdList[1], thirdMarket).Scan(&id)
+	if err != nil {
+		return 0, errors.Wrapf(err, "uspCreateSurebet error")
+	}
+	s.cache.Set(key, id, 1)
 	return id, nil
 }
