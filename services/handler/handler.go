@@ -24,10 +24,13 @@ func (h *Handler) HandleSurebet(ctx context.Context, sur *pb.Surebet) error {
 		h.log.Infow("InsertFullSurebet error", "err", err)
 		return err
 	}
-
-	_, err = h.client.PlaceSurebet(ctx, &pb.PlaceSurebetRequest{Surebet: sur})
-	if err != nil {
-		h.log.Infow("client.PlaceSurebet error", "err", err)
+	if len(sur.Members) == 2 {
+		_, err = h.client.PlaceSurebet(ctx, &pb.PlaceSurebetRequest{Surebet: sur})
+		if err != nil {
+			h.log.Infow("client.PlaceSurebet error", "err", err)
+		}
+	} else {
+		h.log.Info("got 3way surebet, not sended to surebet service")
 	}
 	return nil
 }

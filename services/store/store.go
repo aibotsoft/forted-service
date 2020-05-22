@@ -133,7 +133,7 @@ func (s *Store) InsertFullSurebet(ctx context.Context, sur *pb.Surebet) error {
 	for i := range sur.Members {
 		MarketIdList = append(MarketIdList, sur.Members[i].Forted.MarketId)
 	}
-	s.log.Info(MarketIdList)
+	//s.log.Info(MarketIdList)
 
 	sur.FortedSurebetId, err = s.CreateSurebet(ctx, fortedEventId, MarketIdList)
 	if err != nil {
