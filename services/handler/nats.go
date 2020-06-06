@@ -6,8 +6,8 @@ import (
 )
 
 func (h *Handler) NatsConnect() error {
-	h.log.Info("begin_connect_nats")
-	nc, err := nats.Connect("nats://192.168.1.10:30873")
+	h.log.Infow("begin_connect_nats", "url", h.cfg.Broker.Url)
+	nc, err := nats.Connect(h.cfg.Broker.Url)
 	if err != nil {
 		return err
 	}

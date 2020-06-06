@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"github.com/aibotsoft/forted-service/services/client"
 	"github.com/aibotsoft/forted-service/services/middles"
 	"github.com/aibotsoft/forted-service/services/store"
 	pb "github.com/aibotsoft/gen/fortedpb"
@@ -14,12 +13,12 @@ import (
 )
 
 type Handler struct {
-	cfg    *config.Config
-	log    *zap.SugaredLogger
-	client *client.FortedClient
-	store  *store.Store
-	Conf   *config_client.ConfClient
-	nats   *nats.EncodedConn
+	cfg *config.Config
+	log *zap.SugaredLogger
+	//client *client.FortedClient
+	store *store.Store
+	Conf  *config_client.ConfClient
+	nats  *nats.EncodedConn
 }
 
 func (h *Handler) HandleSurebet(ctx context.Context, sur *pb.Surebet) error {
@@ -41,10 +40,10 @@ func (h *Handler) HandleSurebet(ctx context.Context, sur *pb.Surebet) error {
 				h.log.Info(err)
 			}
 
-			_, err = h.client.PlaceSurebet(ctx, &pb.PlaceSurebetRequest{Surebet: sur})
-			if err != nil {
-				h.log.Infow("client.PlaceSurebet error", "err", err)
-			}
+			//_, err = h.client.PlaceSurebet(ctx, &pb.PlaceSurebetRequest{Surebet: sur})
+			//if err != nil {
+			//	h.log.Infow("client.PlaceSurebet error", "err", err)
+			//}
 			h.log.Infow("got_surebet", "time", time.Since(start), "fid", sur.FortedSurebetId, "profit", sur.FortedProfit)
 		} else {
 			err := h.Publish("middle", sur)
@@ -63,10 +62,10 @@ func (h *Handler) HandleSurebet(ctx context.Context, sur *pb.Surebet) error {
 func (h *Handler) Close() {
 	h.store.Close()
 	h.Conf.Close()
-	h.client.Close()
+	//h.client.Close()
 	h.nats.Close()
 }
 
-func New(cfg *config.Config, log *zap.SugaredLogger, client *client.FortedClient, store *store.Store, conf *config_client.ConfClient) *Handler {
-	return &Handler{cfg: cfg, log: log, client: client, store: store, Conf: conf}
+func New(cfg *config.Config, log *zap.SugaredLogger, store *store.Store, conf *config_client.ConfClient) *Handler {
+	return &Handler{cfg: cfg, log: log, store: store, Conf: conf}
 }

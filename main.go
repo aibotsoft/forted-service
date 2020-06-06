@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/aibotsoft/forted-service/services/client"
 	"github.com/aibotsoft/forted-service/services/handler"
 	"github.com/aibotsoft/forted-service/services/server"
 	"github.com/aibotsoft/forted-service/services/store"
@@ -27,10 +26,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cli := client.NewFortedClient(cfg, log, conf)
+	//cli := client.NewFortedClient(cfg, log, conf)
 
 	sto := store.NewStore(cfg, log, db)
-	han := handler.New(cfg, log, cli, sto, conf)
+	han := handler.New(cfg, log, sto, conf)
 
 	s := server.NewServer(cfg, log, han)
 
