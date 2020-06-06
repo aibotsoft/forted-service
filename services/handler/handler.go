@@ -32,6 +32,10 @@ func (h *Handler) HandleSurebet(ctx context.Context, sur *pb.Surebet) error {
 		diff, err := middles.CalcMiddle(sur.Members[0].MarketName, sur.Members[1].MarketName)
 		if err != nil {
 			h.log.Error(err)
+			err := h.Publish("surebet", sur)
+			if err != nil {
+				h.log.Info(err)
+			}
 			return nil
 		}
 		if diff == 0 {
