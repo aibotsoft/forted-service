@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/nats-io/nats.go"
-	"time"
 )
 
 func (h *Handler) NatsConnect() error {
@@ -19,7 +18,6 @@ func (h *Handler) NatsConnect() error {
 	return nil
 }
 func (h *Handler) Publish(subject string, v interface{}) (err error) {
-	start := time.Now()
 	if h.nats == nil {
 		err = h.NatsConnect()
 		if err != nil {
@@ -27,6 +25,5 @@ func (h *Handler) Publish(subject string, v interface{}) (err error) {
 		}
 	}
 	err = h.nats.Publish(subject, v)
-	h.log.Infow("Publish_done", "time", time.Since(start))
 	return err
 }

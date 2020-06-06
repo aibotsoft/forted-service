@@ -29,9 +29,8 @@ func main() {
 	//cli := client.NewFortedClient(cfg, log, conf)
 
 	sto := store.NewStore(cfg, log, db)
-	han := handler.New(cfg, log, sto, conf)
-
-	s := server.NewServer(cfg, log, han)
+	h := handler.New(cfg, log, sto, conf)
+	s := server.NewServer(cfg, log, h)
 
 	// Инициализируем Close
 	errc := make(chan error)
