@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/aibotsoft/gen v0.0.0-20200531091936-c4d5d714bf82
-	github.com/aibotsoft/micro v0.0.0-20200603095207-2998daaf8ae2
+	github.com/aibotsoft/micro v0.0.0-20200606052507-83958c4d3f36
 	github.com/dgraph-io/ristretto v0.0.2
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/jmoiron/sqlx v1.2.0
@@ -21,7 +21,3 @@ require (
 	google.golang.org/genproto v0.0.0-20200605102947-12044bf5ea91 // indirect
 	google.golang.org/grpc v1.29.1
 )
-
-replace github.com/aibotsoft/micro => ../micro
-
-replace github.com/aibotsoft/gen => ../gen

@@ -30,6 +30,7 @@ func main() {
 
 	sto := store.NewStore(cfg, log, db)
 	h := handler.New(cfg, log, sto, conf)
+	h.Publish("ping", "ping")
 	s := server.NewServer(cfg, log, h)
 
 	// Инициализируем Close

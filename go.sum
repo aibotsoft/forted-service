@@ -32,6 +32,14 @@ github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
+github.com/aibotsoft/gen v0.0.0-20200531091936-c4d5d714bf82 h1:4XEBTOtRLVz7Yw8vbAYWObQ8TaEr4fDIYCe30K4HRVA=
+github.com/aibotsoft/gen v0.0.0-20200531091936-c4d5d714bf82/go.mod h1:NoQ2VderdqZdHNO9iFPjlLdNpR++I0nCoR16VDEZKbw=
+github.com/aibotsoft/micro v0.0.0-20200603095207-2998daaf8ae2 h1:QJefG7eDmYi89agee1Rw0t/BmHpVCYzyfjWKQDHCOIo=
+github.com/aibotsoft/micro v0.0.0-20200603095207-2998daaf8ae2/go.mod h1:N/viks8JAU1tXqwfjwARINy68SIIuO84vALzhDbDuF4=
+github.com/aibotsoft/micro v0.0.0-20200606051305-d386f894b46f h1:hNlaOSeSuDhNAd+vCapE+WLvZM1wFuJfBY0FpEsZH+Q=
+github.com/aibotsoft/micro v0.0.0-20200606051305-d386f894b46f/go.mod h1:N/viks8JAU1tXqwfjwARINy68SIIuO84vALzhDbDuF4=
+github.com/aibotsoft/micro v0.0.0-20200606052507-83958c4d3f36 h1:k0Kd20K4n8foKXRhT+U02to1zx7ZcwFnIui+yzShHMc=
+github.com/aibotsoft/micro v0.0.0-20200606052507-83958c4d3f36/go.mod h1:N/viks8JAU1tXqwfjwARINy68SIIuO84vALzhDbDuF4=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
