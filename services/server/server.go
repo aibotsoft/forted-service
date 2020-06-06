@@ -11,7 +11,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"net"
-	"time"
 )
 
 type Server struct {
@@ -23,13 +22,11 @@ type Server struct {
 }
 
 func (s *Server) CreateSurebet(ctx context.Context, request *pb.CreateSurebetRequest) (*pb.CreateSurebetResponse, error) {
-	start := time.Now()
 	sur := request.GetSurebet()
 	err := s.handler.HandleSurebet(ctx, sur)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "InsertFullSurebet error")
 	}
-	s.log.Infow("create surebet done", "time", time.Since(start), "FortedSurebetId", sur.FortedSurebetId, "logId", sur.LogId, "profit", sur.FortedProfit)
 	return &pb.CreateSurebetResponse{SurebetId: sur.SurebetId}, nil
 }
 

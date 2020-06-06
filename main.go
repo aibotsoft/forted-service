@@ -30,7 +30,7 @@ func main() {
 	cli := client.NewFortedClient(cfg, log, conf)
 
 	sto := store.NewStore(cfg, log, db)
-	han := handler.NewHandler(cfg, log, cli, sto, conf)
+	han := handler.New(cfg, log, cli, sto, conf)
 
 	s := server.NewServer(cfg, log, han)
 

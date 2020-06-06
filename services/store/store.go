@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"database/sql"
 	pb "github.com/aibotsoft/gen/fortedpb"
 	"github.com/aibotsoft/micro/cache"
 	"github.com/aibotsoft/micro/config"
@@ -10,7 +9,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type Store struct {
@@ -26,32 +24,32 @@ func NewStore(cfg *config.Config, log *zap.SugaredLogger, db *sqlx.DB) *Store {
 func (s *Store) Close() {
 	err := s.db.Close()
 	if err != nil {
-		s.log.Fatal(err)
+		s.log.Info(err)
 	}
 	s.cache.Close()
 }
 
-func (s *Store) CheckSkynetId(ctx context.Context, skynetId int64) (int, error) {
-	var id int
-	err := s.db.QueryRowContext(ctx, "dbo.uspCheckSkynetId", &skynetId).Scan(&id)
-	if err != nil {
-		return 0, err
-	}
-	return id, nil
-}
+//func (s *Store) CheckSkynetId(ctx context.Context, skynetId int64) (int, error) {
+//	var id int
+//	err := s.db.QueryRowContext(ctx, "dbo.uspCheckSkynetId", &skynetId).Scan(&id)
+//	if err != nil {
+//		return 0, err
+//	}
+//	return id, nil
+//}
 
 func (s *Store) InsertFullSurebet(ctx context.Context, sur *pb.Surebet) error {
-	if sur.GetSkynetId() != 0 {
-		logId, err := s.CheckSkynetId(ctx, sur.GetSkynetId())
-		switch {
-		case err == sql.ErrNoRows:
-			break
-		case err != nil:
-			return s.LogAndReturnErr(err, codes.Internal, "store.CheckSkynetId")
-		case logId != 0:
-			return status.Errorf(codes.AlreadyExists, "skynetId %v already exists", sur.GetSkynetId())
-		}
-	}
+	//if sur.GetSkynetId() != 0 {
+	//	logId, err := s.CheckSkynetId(ctx, sur.GetSkynetId())
+	//	switch {
+	//	case err == sql.ErrNoRows:
+	//		break
+	//	case err != nil:
+	//		return s.LogAndReturnErr(err, codes.Internal, "store.CheckSkynetId")
+	//	case logId != 0:
+	//		return status.Errorf(codes.AlreadyExists, "skynetId %v already exists", sur.GetSkynetId())
+	//	}
+	//}
 	fortedServiceId, err := s.CreateService(ctx, "Forted")
 	if err != nil {
 		return s.LogAndReturnErr(err, codes.Internal, "store.CreateService")
@@ -88,7 +86,7 @@ func (s *Store) InsertFullSurebet(ctx context.Context, sur *pb.Surebet) error {
 		return s.LogAndReturnErr(err, codes.Internal, "store.CreateEvent")
 	}
 
-	var initiatorId int64
+	//var initiatorId int64
 	for _, ss := range sur.Members {
 		ss.Forted.ServiceId, err = s.CreateService(ctx, ss.ServiceName)
 		if err != nil {
@@ -119,9 +117,9 @@ func (s *Store) InsertFullSurebet(ctx context.Context, sur *pb.Surebet) error {
 		if err != nil {
 			return s.LogAndReturnErr(err, codes.Internal, "store.CreateMarket")
 		}
-		if ss.Initiator {
-			initiatorId = ss.Forted.MarketId
-		}
+		//if ss.Initiator {
+		//	initiatorId = ss.Forted.MarketId
+		//}
 		ss.Forted.PriceId, err = s.CreatePrice(ctx, ss.Price, ss.Forted.MarketId, sur.CreatedAt)
 		if err != nil {
 			return s.LogAndReturnErr(err, codes.Internal, "store.CreatePrice")
@@ -139,9 +137,9 @@ func (s *Store) InsertFullSurebet(ctx context.Context, sur *pb.Surebet) error {
 	if err != nil {
 		return s.LogAndReturnErr(err, codes.Internal, "store.CreateSurebet")
 	}
-	sur.LogId, err = s.CreateLog(ctx, sur.FortedSurebetId, sur.FilterName, sur.FortedProfit, initiatorId, sur.GetSkynetId(), sur.CreatedAt)
-	if err != nil {
-		return s.LogAndReturnErr(err, codes.Internal, "store.CreateLog")
-	}
+	//sur.LogId, err = s.CreateLog(ctx, sur.FortedSurebetId, sur.FilterName, sur.FortedProfit, initiatorId, sur.GetSkynetId(), sur.CreatedAt)
+	//if err != nil {
+	//	return s.LogAndReturnErr(err, codes.Internal, "store.CreateLog")
+	//}
 	return nil
 }

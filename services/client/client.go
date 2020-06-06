@@ -27,7 +27,7 @@ func NewFortedClient(cfg *config.Config, log *zap.SugaredLogger, conf *config_cl
 	log.Infow("connecting to surebet-service...", "addr", addr)
 	conn, err := grpc.DialContext(ctx, addr, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
-		log.Panicw("NewFortedClient DialContext error", "addr", addr, "err", err)
+		log.Errorw("NewFortedClient DialContext error", "addr", addr, "err", err)
 	}
 	cli := pb.NewFortedClient(conn)
 	log.Infow("begin ping to surebet-service", "addr", addr)
@@ -37,7 +37,6 @@ func NewFortedClient(cfg *config.Config, log *zap.SugaredLogger, conf *config_cl
 	} else {
 		log.Infow("ping done", "addr", addr)
 	}
-
 	return &FortedClient{cfg: cfg, log: log, conn: conn, FortedClient: cli, conf: conf}
 }
 
