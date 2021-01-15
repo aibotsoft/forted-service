@@ -49,16 +49,14 @@ func NewServer(cfg *config.Config, log *zap.SugaredLogger, handler *handler.Hand
 	return &Server{cfg: cfg, log: log, handler: handler, gs: grpc.NewServer()}
 }
 func (s *Server) Serve() error {
-	addr, err := s.handler.Conf.GetGrpcAddr(context.Background(), s.cfg.Service.Name)
-	if err != nil {
-		s.log.Panic(err)
-	}
-	lis, err := net.Listen("tcp", addr)
+	hostPort := net.JoinHostPort(s.cfg.Service.GrpcHost, s.cfg.Service.GrpcPort)
+
+	lis, err := net.Listen("tcp", hostPort)
 	if err != nil {
 		return errors.Wrap(err, "net.Listen error")
 	}
 	pb.RegisterFortedServer(s.gs, s)
-	s.log.Info("gRPC Server listens on addr ", addr)
+	s.log.Infow("gRPC Server listens", "hostPort", hostPort)
 	return s.gs.Serve(lis)
 }
 
