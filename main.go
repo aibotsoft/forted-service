@@ -6,7 +6,6 @@ import (
 	"github.com/aibotsoft/forted-service/services/server"
 	"github.com/aibotsoft/forted-service/services/store"
 	"github.com/aibotsoft/micro/config"
-	"github.com/aibotsoft/micro/config_client"
 	"github.com/aibotsoft/micro/logger"
 	"github.com/aibotsoft/micro/sqlserver"
 	"github.com/subosito/gotenv"
@@ -27,7 +26,7 @@ func main() {
 	log := logger.New()
 
 	log.Infow("Begin service", "config", cfg.Service)
-	conf := config_client.New(cfg, log)
+	//conf := config_client.New(cfg, log)
 
 	db := sqlserver.MustConnectX(cfg)
 	//err := mig.MigrateUp(cfg, log, db)
@@ -37,7 +36,7 @@ func main() {
 	//cli := client.NewFortedClient(cfg, log, conf)
 
 	sto := store.NewStore(cfg, log, db)
-	h := handler.New(cfg, log, sto, conf)
+	h := handler.New(cfg, log, sto)
 	h.Publish("ping", "ping")
 	s := server.NewServer(cfg, log, h)
 

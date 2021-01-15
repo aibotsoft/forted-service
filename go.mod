@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/aibotsoft/gen v0.0.0-20210115125951-7d0a2b681929
-	github.com/aibotsoft/micro v0.0.0-20210115195428-2a3b9f333a2a
+	github.com/aibotsoft/micro v0.0.0-20210115200616-75622055ef7e
 	github.com/denisenkom/go-mssqldb v0.9.0 // indirect
 	github.com/dgraph-io/ristretto v0.0.3
 	github.com/gogo/protobuf v1.3.2 // indirect

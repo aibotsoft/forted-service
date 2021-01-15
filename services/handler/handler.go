@@ -5,7 +5,6 @@ import (
 	"github.com/aibotsoft/forted-service/services/store"
 	pb "github.com/aibotsoft/gen/fortedpb"
 	"github.com/aibotsoft/micro/config"
-	"github.com/aibotsoft/micro/config_client"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 	"time"
@@ -15,7 +14,6 @@ type Handler struct {
 	cfg   *config.Config
 	log   *zap.SugaredLogger
 	store *store.Store
-	Conf  *config_client.ConfClient
 	nats  *nats.EncodedConn
 }
 
@@ -60,13 +58,11 @@ func (h *Handler) HandleSurebet(ctx context.Context, sur *pb.Surebet) (err error
 
 func (h *Handler) Close() {
 	h.store.Close()
-	h.Conf.Close()
-	//h.client.Close()
 	if h.nats != nil {
 		h.nats.Close()
 	}
 }
 
-func New(cfg *config.Config, log *zap.SugaredLogger, store *store.Store, conf *config_client.ConfClient) *Handler {
-	return &Handler{cfg: cfg, log: log, store: store, Conf: conf}
+func New(cfg *config.Config, log *zap.SugaredLogger, store *store.Store) *Handler {
+	return &Handler{cfg: cfg, log: log, store: store}
 }
