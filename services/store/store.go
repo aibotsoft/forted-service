@@ -39,17 +39,6 @@ func (s *Store) Close() {
 //}
 
 func (s *Store) InsertFullSurebet(ctx context.Context, sur *pb.Surebet) error {
-	//if sur.GetSkynetId() != 0 {
-	//	logId, err := s.CheckSkynetId(ctx, sur.GetSkynetId())
-	//	switch {
-	//	case err == sql.ErrNoRows:
-	//		break
-	//	case err != nil:
-	//		return s.LogAndReturnErr(err, codes.Internal, "store.CheckSkynetId")
-	//	case logId != 0:
-	//		return status.Errorf(codes.AlreadyExists, "skynetId %v already exists", sur.GetSkynetId())
-	//	}
-	//}
 	fortedServiceId, err := s.CreateService(ctx, "Forted")
 	if err != nil {
 		return s.LogAndReturnErr(err, codes.Internal, "store.CreateService")
@@ -125,13 +114,11 @@ func (s *Store) InsertFullSurebet(ctx context.Context, sur *pb.Surebet) error {
 			return s.LogAndReturnErr(err, codes.Internal, "store.CreatePrice")
 		}
 	}
-	//s.log.Info("hello")
 	//sur.FortedSurebetId, err = s.CreateSurebet(ctx, fortedEventId, sur.Members[0].Forted.MarketId, sur.Members[1].Forted.MarketId)
 	var MarketIdList []int64
 	for i := range sur.Members {
 		MarketIdList = append(MarketIdList, sur.Members[i].Forted.MarketId)
 	}
-	//s.log.Info(MarketIdList)
 
 	sur.FortedSurebetId, err = s.CreateSurebet(ctx, fortedEventId, MarketIdList)
 	if err != nil {

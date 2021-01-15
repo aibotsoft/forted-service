@@ -117,7 +117,7 @@ func (s *Store) CreateSurebet(ctx context.Context, FortedEventId int64, marketId
 	if len(marketIdList) == 3 {
 		thirdMarket = marketIdList[2]
 	}
-	err := s.db.QueryRowContext(ctx, "dbo.uspCreateSurebet", &FortedEventId, marketIdList[0], marketIdList[1], thirdMarket).Scan(&id)
+	err := s.db.QueryRowContext(ctx, "dbo.uspCreateSurebet", FortedEventId, marketIdList[0], marketIdList[1], thirdMarket).Scan(&id)
 	if err != nil {
 		return 0, errors.Wrapf(err, "uspCreateSurebet error")
 	}

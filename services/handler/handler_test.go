@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"github.com/aibotsoft/forted-service/services/client"
 	"github.com/aibotsoft/forted-service/services/store"
 	"github.com/aibotsoft/micro/config"
 	"github.com/aibotsoft/micro/config_client"
@@ -20,8 +19,7 @@ func TestMain(m *testing.M) {
 	db := sqlserver.MustConnectX(cfg)
 	sto := store.NewStore(cfg, log, db)
 	conf := config_client.New(cfg, log)
-	cli := client.NewFortedClient(cfg, log, conf)
-	h = New(cfg, log, cli, sto, conf)
+	h := New(cfg, log, sto, conf)
 	m.Run()
 	h.Close()
 }

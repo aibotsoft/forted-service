@@ -8,24 +8,32 @@ import (
 	"github.com/aibotsoft/micro/config"
 	"github.com/aibotsoft/micro/config_client"
 	"github.com/aibotsoft/micro/logger"
-	"github.com/aibotsoft/micro/mig"
 	"github.com/aibotsoft/micro/sqlserver"
+	"github.com/subosito/gotenv"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
+func init() {
+	err := gotenv.Load()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func main() {
 	cfg := config.New()
 	log := logger.New()
+
 	log.Infow("Begin service", "config", cfg.Service)
 	conf := config_client.New(cfg, log)
 
 	db := sqlserver.MustConnectX(cfg)
-	err := mig.MigrateUp(cfg, log, db)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//err := mig.MigrateUp(cfg, log, db)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 	//cli := client.NewFortedClient(cfg, log, conf)
 
 	sto := store.NewStore(cfg, log, db)

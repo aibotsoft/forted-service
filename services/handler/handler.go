@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"github.com/aibotsoft/forted-service/services/middles"
 	"github.com/aibotsoft/forted-service/services/store"
 	pb "github.com/aibotsoft/gen/fortedpb"
 	"github.com/aibotsoft/micro/config"
@@ -13,52 +12,48 @@ import (
 )
 
 type Handler struct {
-	cfg *config.Config
-	log *zap.SugaredLogger
-	//client *client.FortedClient
+	cfg   *config.Config
+	log   *zap.SugaredLogger
 	store *store.Store
 	Conf  *config_client.ConfClient
 	nats  *nats.EncodedConn
 }
 
-func (h *Handler) HandleSurebet(ctx context.Context, sur *pb.Surebet) error {
+func (h *Handler) HandleSurebet(ctx context.Context, sur *pb.Surebet) (err error) {
 	start := time.Now()
-	err := h.store.InsertFullSurebet(ctx, sur)
+	err = h.store.InsertFullSurebet(ctx, sur)
 	if err != nil {
 		h.log.Infow("InsertFullSurebet error", "err", err)
 		return err
 	}
+	sur.Calc.SurebetType = "surebet"
 	if len(sur.Members) == 2 {
-		diff, err := middles.CalcMiddle(sur.Members[0].MarketName, sur.Members[1].MarketName)
-		if err != nil {
-			h.log.Error(err)
-			err := h.Publish("surebet", sur)
+		var isNotConverted bool
+		for i := range sur.Members {
+			err := Convert(sur.Members[i])
 			if err != nil {
-				h.log.Info(err)
+				h.log.Info("convert_error ", err, " market:", sur.Members[i].MarketName, " service:", sur.Members[i].ServiceName, " sport:", sur.FortedSport)
+				isNotConverted = true
 			}
-			return nil
 		}
-		if diff == 0 {
-			err := h.Publish("surebet", sur)
-			if err != nil {
-				h.log.Info(err)
-			}
-
-			//_, err = h.client.PlaceSurebet(ctx, &pb.PlaceSurebetRequest{Surebet: sur})
-			//if err != nil {
-			//	h.log.Infow("client.PlaceSurebet error", "err", err)
-			//}
-			h.log.Infow("got_surebet", "time", time.Since(start), "fid", sur.FortedSurebetId, "profit", sur.FortedProfit)
-		} else {
-			err := h.Publish("middle", sur)
-			if err != nil {
-				h.log.Info(err)
-			}
-			h.log.Infow("got_middle", "time", time.Since(start), "fid", sur.FortedSurebetId, "profit", sur.FortedProfit,
-				"diff", diff, "m1", sur.Members[0].MarketName, "m2", sur.Members[1].MarketName, "sport", sur.FortedSport)
+		CalcMiddle(sur)
+		if sur.Calc.MiddleDiff > 0 && !isNotConverted {
+			sur.Calc.SurebetType = "middle"
 		}
 	} else {
-		h.log.Info("got_3way_surebet, not sended to surebet service", "time", time.Since(start), "fid", sur.FortedSurebetId, "profit", sur.FortedProfit)
+		sur.Calc.SurebetType = "3way_surebet"
+	}
+	err = h.Publish(sur.Calc.SurebetType, sur)
+	if err != nil {
+		h.log.Info(err)
+	} else {
+		h.log.Infow(sur.Calc.SurebetType, "t", time.Since(start), "p", sur.FortedProfit,
+			"diff", sur.Calc.MiddleDiff, "m1", sur.Members[0].MarketName, "m2", sur.Members[1].MarketName,
+			"sp", sur.FortedSport,
+			"fid", sur.FortedSurebetId,
+			"t1", sur.Members[0].ServiceName,
+			"t2", sur.Members[1].ServiceName,
+		)
 	}
 	return nil
 }
@@ -67,7 +62,9 @@ func (h *Handler) Close() {
 	h.store.Close()
 	h.Conf.Close()
 	//h.client.Close()
-	h.nats.Close()
+	if h.nats != nil {
+		h.nats.Close()
+	}
 }
 
 func New(cfg *config.Config, log *zap.SugaredLogger, store *store.Store, conf *config_client.ConfClient) *Handler {

@@ -1,1 +1,1 @@
-drop table  dbo.SurbetLog
+drop table  dbo.Log

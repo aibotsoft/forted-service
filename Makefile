@@ -5,8 +5,9 @@ DOCKER_USERNAME=aibotsoft
 CGO_ENABLED=0
 GOARCH=amd64
 
+t
 linux_build:
-	GOOS=linux go build -o dist/service main.go
+	GOOS=linux go build -v -o dist/service main.go
 
 build:
 	go build -o dist/service main.go

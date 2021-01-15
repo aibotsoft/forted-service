@@ -1,37 +1,35 @@
-package middles
+package handler
 
 import (
 	"encoding/json"
-	"github.com/aibotsoft/micro/logger"
+	pb "github.com/aibotsoft/gen/fortedpb"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 	"testing"
 )
-
-var log *zap.SugaredLogger
 
 type DemoSurebet struct {
 	Stavka1 string
 	Stavka2 string
-	Tip     string
+	Diff    float64
 }
 
 func Test_calcMiddle(t *testing.T) {
-	log = logger.New()
 	var list []DemoSurebet
 	err := json.Unmarshal([]byte(s), &list)
 	assert.NoError(t, err)
-	for _, surebet := range list {
-		got, err := CalcMiddle(surebet.Stavka1, surebet.Stavka2)
-		if assert.NoError(t, err) {
-			//if surebet.Tip == "VILKA" {
-			//	assert.Equal(t, float64(0), got, surebet)
-			//}
-			if surebet.Tip == "KARIDOR" {
-				assert.Greater(t, got, float64(0), surebet)
-			}
+	for _, demo := range list {
+		sb := &pb.Surebet{
+			Members: []*pb.SurebetSide{{MarketName: demo.Stavka1},
+				{MarketName: demo.Stavka2}},
 		}
-		log.Info(got, surebet)
+		for i := range sb.Members {
+			Convert(sb.Members[i])
+		}
+		CalcMiddle(sb)
+		if !assert.Equal(t, demo.Diff, sb.Calc.MiddleDiff) {
+			t.Log(demo, sb.Calc.MiddleDiff, sb.Members[0].Market, sb.Members[1].Market)
+
+		}
 	}
 }
 
@@ -39,13 +37,138 @@ var s = `
 [
   {
     "stavka1": "1",
-    "stavka2": "Ф2(0,75)",
-    "tip": "VILKA"
+    "stavka2": "Х2",
+    "diff": 0
   },
   {
-    "stavka1": "2",
-    "stavka2": "Ф1(-0,75)",
-    "tip": "VILKA"
+    "stavka1": "Х2",
+    "stavka2": "Против Х2",
+    "diff": 0
+  },
+  {
+    "stavka1": "Х",
+    "stavka2": "12",
+    "diff": 0
+  },
+  {
+    "stavka1": "1Х",
+    "stavka2": "2",
+    "diff": 0
+  },
+  {
+    "stavka1": "1Х",
+    "stavka2": "Ф2(0)",
+    "diff": 0.5
+  },
+  {
+    "stavka1": "Х",
+    "stavka2": "Против Х",
+    "diff": 0
+  },
+  {
+    "stavka1": "12",
+    "stavka2": "Против 12",
+    "diff": 0
+  },
+  {
+    "stavka1": "1",
+    "stavka2": "Ф2(0,75)",
+    "diff": 0.25
+  },
+  {
+    "stavka1": "П1",
+    "stavka2": "П2",
+    "diff": 0
+  },
+  {
+    "stavka1": "П1",
+    "stavka2": "Против П1",
+    "diff": 0
+  },
+  {
+    "stavka1": "П1",
+    "stavka2": "Ф2(0,5)",
+    "diff": 0,5
+  },
+  {
+    "stavka1": "Чёт",
+    "stavka2": "Нечёт",
+    "diff": 0
+  },
+  {
+    "stavka1": "Чёт",
+    "stavka2": "Против Чёт",
+    "diff": 0
+  },
+  {
+    "stavka1": "1",
+    "stavka2": "Против 1",
+    "diff": 0
+  },
+  {
+    "stavka1": "ТБ(2,5)",
+    "stavka2": "ТМ(2,5)",
+    "diff": 0
+  },
+  {
+    "stavka1": "ТБ(2,5)",
+    "stavka2": "Против ТБ(2,5)",
+    "diff": 0
+  },
+  {
+    "stavka1": "ТБ(2,5)",
+    "stavka2": "Против ТБ(2,75)",
+    "diff": 0.25
+  },
+  {
+    "stavka1": "Ф1(0)",
+    "stavka2": "Ф2(0)",
+    "diff": 0
+  },
+  {
+    "stavka1": "Ф1(0)",
+    "stavka2": "Против Ф1(-0,25)",
+    "diff": 0.25
+  },
+  {
+    "stavka1": "Ф1(0,5)",
+    "stavka2": "Против Ф1(0,5)",
+    "diff": 0
+  },
+  {
+    "stavka1": "Ф1(-0,5)",
+    "stavka2": "Ф2(0,75)",
+    "diff": 0.25
+  },
+  {
+    "stavka1": "Ф1(-2,5)",
+    "stavka2": "Ф2(2,75)",
+    "diff": 0.25
+  },
+  {
+    "stavka1": "Ф1(-2,5)",
+    "stavka2": "Против Ф1(-2,5)",
+    "diff": 0
+  },
+  {
+    "stavka1": "ТБ(5,5)",
+    "stavka2": "ТМ(5,75)",
+    "diff": 0.25
+  },
+  {
+    "stavka1": "ИТ1Б(5,5)",
+    "stavka2": "ИТ1М(5,75)",
+    "diff": 0.25
+  },
+  {
+    "stavka1": "ИТ1Б(5,5)",
+    "stavka2": "Против ИТ1Б(5,75)",
+    "diff": 0.25
+  },
+  {
+    "stavka1": "ИТ2Б(5,5)",
+    "stavka2": "Против ИТ2Б(6)",
+    "diff": 0.5
   }
 ]
 `

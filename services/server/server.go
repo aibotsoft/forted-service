@@ -22,12 +22,27 @@ type Server struct {
 }
 
 func (s *Server) CreateSurebet(ctx context.Context, request *pb.CreateSurebetRequest) (*pb.CreateSurebetResponse, error) {
-	sur := request.GetSurebet()
-	err := s.handler.HandleSurebet(ctx, sur)
+	sb := request.GetSurebet()
+	err := s.handler.HandleSurebet(ctx, sb)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "InsertFullSurebet error")
+		return nil, status.Errorf(codes.Internal, "insert_full_surebet_error")
 	}
-	return &pb.CreateSurebetResponse{SurebetId: sur.SurebetId}, nil
+	//if sb.FortedSport == "Футбол" || sb.FortedSport == "Баскетбол" {
+	//	if sb.Members[0].ServiceName == "Sbobet" && sb.FortedProfit > 2 {
+	//		//s.log.Info("это футбол")
+	//		if strings.Index(sb.Members[0].MarketName, "1/4") == -1 && strings.Index(sb.Members[0].MarketName, "Старт") == -1 {
+	//			sb.Members[0].ServiceName = "SbobetMarket"
+	//			_ = s.handler.HandleSurebet(ctx, sb)
+	//		}
+	//
+	//	} else if sb.Members[1].ServiceName == "Sbobet" {
+	//		if strings.Index(sb.Members[1].MarketName, "1/4") == -1 && strings.Index(sb.Members[0].MarketName, "Старт") == -1{
+	//			sb.Members[1].ServiceName = "SbobetMarket"
+	//			_ = s.handler.HandleSurebet(ctx, sb)
+	//		}
+	//	}
+	//}
+	return &pb.CreateSurebetResponse{}, nil
 }
 
 func NewServer(cfg *config.Config, log *zap.SugaredLogger, handler *handler.Handler) *Server {

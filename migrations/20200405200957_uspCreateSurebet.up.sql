@@ -5,7 +5,7 @@ create or alter proc dbo.uspCreateSurebet @FortedEventId int,
 as
 begin
     set nocount on
-    declare @SurebetId int
+    declare @SurebetId bigint
 
     select @SurebetId = SurebetId
     from dbo.Surebet

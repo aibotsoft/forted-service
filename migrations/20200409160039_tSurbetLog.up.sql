@@ -9,6 +9,5 @@ create table dbo.Log
     ReceivedAt   datetimeoffset                             not null,
     CreatedAt    datetimeoffset default sysdatetimeoffset() not null,
     constraint PK_LogId primary key (LogId),
-    constraint FK_Log_SurebetId foreign key (SurebetId) references Surebet on update cascade on delete cascade,
 )
 create index Log_SkynetId_index on Log (SkynetId desc)
