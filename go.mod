@@ -1,6 +1,6 @@
 module github.com/aibotsoft/forted-service
 
-go 1.14
+go 1.15
 
 require (
 	github.com/aibotsoft/gen v0.0.0-20210115125951-7d0a2b681929
